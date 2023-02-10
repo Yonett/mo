@@ -1,44 +1,76 @@
-delta = 1e-6
+delta = 1e-8
 eps = 1e-5
-
-def func(x):
-    return (x-1)**2
 
 def objective(func, x):
     return eval(func, {"x": x})
 
-def dichotomy(a, b, func):
-    while (abs(b-a) > eps):
-        x1 = (a + b - delta) / 2
-        x2 = (a + b + delta) / 2
-        if (objective(func, x1) < objective(func, x2)):
-            b = x2
-        elif (objective(func, x2) < objective(func, x1)):
-            a = x1
-        else:
-            a = x1
-            b = x2
-    print(f"{x1:.8e}, {x2:.8e}")
 
-def golden_section(a, b, func):
-    x1 = a + 0.381966011*(b-a)
-    x2 = b - 0.381966011*(b-a)
-    value1 = objective(func, x1)
-    value2 = objective(func, x2)
-    while (abs(b-a) > eps):
-        if (value1 < value2):
-            b = x2
-            x2 = x1
-            value2 = value1
-            x1 = a + 0.381966011*(b-a)
-            value1 = objective(func, x1)
+def dichotomy(begin: float, end: float, func: str, eps: float, delta: float):
+    """
+    Finds an interval that contains the minimum of a function
+    Also creates a file with csv table of the following format:
+
+    +------+------+-------+------------+-------------+----------+--------+-------------------+------------------------------------------------+
+    | iter | left | right | value_left | value_right | begin(i) | end(i) | end(i) - begin(i) | end(i - 1) - begin(i - 1) /  end(i) - begin(i) |
+    +------+------+-------+------------+-------------+----------+--------+-------------------+------------------------------------------------+
+
+    :param begin: begin of initial interval
+    :param end: end of initial interval
+    :param func: function expression in Python format, must be
+                 valid for standard eval() function
+    :param eps: precision
+    :param delta: value of deflection from the middle of interval
+
+    :return: void
+    """
+
+    iters = 0
+
+    while (abs(end - begin) > eps):
+
+        iters += 1
+
+        left = (begin + end - delta) / 2
+        right = (begin + end + delta) / 2
+
+        value_left = objective(func, left)
+        value_right = objective(func, right)
+
+        if (value_left < value_right):
+            end = right
+        elif (value_right < value_left):
+            begin = left
         else:
-            a = x1
-            x1 = x2
-            value1 = value2
-            x2 = b - 0.381966011*(b-a)
-            value2 = objective(func, x2)
-    print(f"{x1:.8e}, {x2:.8e}")
+            begin = left
+            end = right
+
+    print(f"{begin:.8e}, {end:.8e}, {iters}")
+
+def golden_section(begin, end, func):
+
+    golden_number = 0.381966011
+
+    left = begin + golden_number * (end - begin)
+    right = end - golden_number * (end - begin)
+
+    value_left = objective(func, left)
+    value_right = objective(func, right)
+
+    while (abs(end - begin) > eps):
+        if (value_left < value_right):
+            end = right
+            right = left
+            value_right = value_left
+            left = begin + golden_number*(end - begin)
+            value_left = objective(func, left)
+        else:
+            begin = left
+            left = right
+            value_left = value_right
+            right = end - golden_number*(end - begin)
+            value_right = objective(func, right)
+
+    print(f"{begin:.8e}, {end:.8e}")
 
 
 def main():
