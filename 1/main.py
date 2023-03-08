@@ -204,6 +204,31 @@ def fibonacci(begin: float, end: float, func: str, eps: float):
     print(f"{begin:.8e}, {end:.8e}, {iters}")
 
 
+def min_interval(begin: float, func: str, delta: float):
+    iters = h = 0
+    prev = curr = next = begin
+
+    if (objective(func, begin) > objective(func, begin + delta)):
+        next = begin + delta
+        h = delta
+    if (objective(func, begin) > objective(func, begin - delta)):
+        next = begin - delta
+        h = -delta
+
+    if (h != 0):
+        while (objective(func, curr) > objective(func, next)):
+            iters += 1
+            prev = curr
+            curr = next
+
+            h *= 2
+            next = curr + h
+
+        print(f"[{prev},{next}], iters = {iters}")
+    else:
+        print(f"[{begin - delta}, {begin + delta}], iters = 0")
+
+
 def main():
     file = open("funcs.txt")
     for func in file:
@@ -211,7 +236,7 @@ def main():
         dichotomy_objectives_range.clear()
         golden_section_objectives_range.clear()
         fibonacci_objectives_range.clear()
-        
+
         for eps in eps_range:
 
             delta = eps * 1.e-3
@@ -225,6 +250,11 @@ def main():
 
             print("Fibonacci:")
             fibonacci(-2, 20, func, eps)
+
+        print(f"{func}delta: {delta}")
+        print("Min interval (begin = 0.0):")
+        min_interval(0.0, func, delta)
+        print("-------------------------")
 
     fig, ax = plt.subplots()
     ax.plot(np.log10(eps_range), dichotomy_objectives_range)
