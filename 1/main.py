@@ -32,7 +32,7 @@ def dichotomy(begin: float, end: float, func: str, eps: float, delta: float):
     | iter | left | right | value_left | value_right | begin(i) | end(i) | end(i) - begin(i) | end(i - 1) - begin(i - 1) /  end(i) - begin(i) |
     +------+------+-------+------------+-------------+----------+--------+-------------------+------------------------------------------------+
 
-    File with table has a name "dichotomy_{eps:1.1e}.csv"
+    File with table has a name "dichotomy\{func}_{eps:1.1e}.csv"
 
     :param begin: begin of initial interval
     :param end: end of initial interval
@@ -87,7 +87,7 @@ def golden_section(begin: float, end: float, func: str, eps: float):
     | iter | left | right | value_left | value_right | begin(i) | end(i) | end(i) - begin(i) | end(i - 1) - begin(i - 1) /  end(i) - begin(i) |
     +------+------+-------+------------+-------------+----------+--------+-------------------+------------------------------------------------+
 
-    File with table has a name "golden_section_{eps:1.1e}.csv"
+    File with table has a name "golden_section\{func}_{eps:1.1e}.csv"
 
     :param begin: begin of initial interval
     :param end: end of initial interval
@@ -147,7 +147,7 @@ def fibonacci(begin: float, end: float, func: str, eps: float):
     | iter | left | right | value_left | value_right | begin(i) | end(i) | end(i) - begin(i) | end(i - 1) - begin(i - 1) /  end(i) - begin(i) |
     +------+------+-------+------------+-------------+----------+--------+-------------------+------------------------------------------------+
 
-    File with table has a name "fibonacci_{eps:1.1e}.csv"
+    File with table has a name "fibonacci\{func}_{eps:1.1e}.csv"
 
     :param begin: begin of initial interval
     :param end: end of initial interval
@@ -205,6 +205,23 @@ def fibonacci(begin: float, end: float, func: str, eps: float):
 
 
 def min_interval(begin: float, func: str, delta: float):
+    """
+    Finds an interval for search the minimum of a function
+    Also creates a file with csv table of the following format:
+
+    +------+------+-----------+
+    | iter | x(i) | func(x(i))|
+    +------+------+-----------+
+
+    File with table has a name "min_interval\{func}_{delta:1.1e}.csv"
+
+    :param begin: start point for searching
+    :param func: function expression in Python format, must be
+                 valid for standard eval() function
+    :param delta: precision for first iteration
+
+    :return: void
+    """
     iters = h = 0
     prev = curr = next = begin
 
@@ -215,18 +232,25 @@ def min_interval(begin: float, func: str, delta: float):
         next = begin - delta
         h = -delta
 
-    if (h != 0):
-        while (objective(func, curr) > objective(func, next)):
-            iters += 1
-            prev = curr
-            curr = next
+    func_string = func.replace("**", "^").replace("\n", "")
 
-            h *= 2
-            next = curr + h
+    with open(f'min_interval\{func_string}_{delta:1.1e}.csv', 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        if (h != 0):
+            while (objective(func, curr) > objective(func, next)):
+                iters += 1
+                prev = curr
+                curr = next
 
-        print(f"[{prev},{next}], iters = {iters}")
-    else:
-        print(f"[{begin - delta}, {begin + delta}], iters = 0")
+                h *= 2
+                next = curr + h
+
+                spamwriter.writerow([iters, next, objective(func, next)])
+
+            print(f"[{prev},{next}], iters = {iters}")
+        else:
+            spamwriter.writerow([iters, begin + delta, objective(func, begin + delta)])
+            print(f"[{begin - delta}, {begin + delta}], iters = 0")
 
 
 def main():
@@ -256,12 +280,24 @@ def main():
         min_interval(0.0, func, delta)
         print("-------------------------")
 
-    fig, ax = plt.subplots()
-    ax.plot(np.log10(eps_range), dichotomy_objectives_range)
-    ax.plot(np.log10(eps_range), golden_section_objectives_range)
-    ax.plot(np.log10(eps_range), fibonacci_objectives_range)
-    ax.grid()
-    plt.show()
+        fig, ax = plt.subplots()
+        ax.plot(np.log10(eps_range), dichotomy_objectives_range, label = "Метод дихотомии")
+        ax.plot(np.log10(eps_range), golden_section_objectives_range,  label = "Метод золотого сечения")
+        ax.plot(np.log10(eps_range), fibonacci_objectives_range, label = "Метод Фибоначчи")
+
+        ax.set_xlabel("Десятичный логарифм задаваемой точности")
+        ax.set_ylabel("Количество вычислений минимизируемой функции")
+        ax.legend()
+
+        ax.grid()
+
+        func_string = func.replace("**", "^").replace("\n", "")
+        plt.title(r'$f(x) = %s, x \in [-2, 20]$' %func_string)
+
+        #plt.show()
+        fig.savefig(f"plots\{func_string}.png", bbox_inches='tight')
+
+        plt.close(fig)
     
     file.close()
 
