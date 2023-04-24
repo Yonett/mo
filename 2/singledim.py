@@ -24,7 +24,7 @@ def rosen_func(x: np.array) -> float:
     """
     return 100 * (x[0, 1] - x[0, 0]**2)**2 + (1 - x[0, 0])**2
 
-def min_interval(begin: float, func: callable, delta: float, x: np.array, s: np.array):
+def min_interval(begin: float, func: callable, delta: float, x: np.array, s: np.array) -> tuple[float, float]:
     """
     Finds an interval for search the minimum of a function
 
@@ -102,25 +102,43 @@ def golden_section(begin: int, end: int, func: callable, eps: float, x: np.array
     return (begin + end) / 2
 
 def main():
-    x = np.array([-25, 34])
-    s = np.matrix([[1, 0], [0, 1]])
-    a = s
+    x = np.array([1500.05, -7853.67], dtype = float)
+    s = np.matrix([[1, 0], [0, 1]], dtype = float)
+    a = np.matrix([[0, 0], [0, 0]], dtype = float)
     eps = 1e-7
 
-    for i in range(20000):
-        begin, end = min_interval(0, rosen_func, 1e-10, x, s[0])
-        lambda1 = golden_section(begin, end, rosen_func, 1e-10, x, s[0])
+    for i in range(1000):
+
+        begin, end = min_interval(0, quad_func, 1e-10, x, s[0])
+        lambda1: float = golden_section(begin, end, quad_func, 1e-10, x, s[0])
         #print(lambda1)
 
         x = x + s[0] * lambda1
         #print(x)
 
-        begin, end = min_interval(0, rosen_func, 1e-10, x, s[1])
-        lambda2 = golden_section(begin, end, rosen_func, 1e-10, x, s[1])
+        begin, end = min_interval(0, quad_func, 1e-10, x, s[1])
+        lambda2: float = golden_section(begin, end, quad_func, 1e-10, x, s[1])
         #print(lambda2)
 
         x = x + s[1] * lambda2
+        #print(x)
+
+        a[0] = lambda1 * s[0] + lambda2 * s[1]
+        if (abs(lambda1) < abs(lambda2)):
+            a[1] = lambda1 * s[1]
+        else:
+            a[1] = lambda2 * s[1]
+
+        s[0] = a[0] / np.linalg.norm(a[0])
+        #print("s[0]:", s[0])
+
+        b = a[1] - (a[1] * s[0].transpose()) * s[0]
+
+        s[1] = b / np.linalg.norm(b)
+
     print(x)
+
+
 
 if __name__ == "__main__":
     main()
