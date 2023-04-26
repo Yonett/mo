@@ -1,24 +1,57 @@
 import numpy as np
 
-s = np.matrix([[1, 0], [0, 1]], dtype = float)
-a = np.matrix([[0, 0], [0, 0]], dtype = float)
+x = np.array([1, 1], dtype=float)
+nu = np.matrix([[1, 0], [0, 1]], dtype = float)
+grad = np.array([2, 2], dtype=float)
+_grad = np.array([-6, -6], dtype=float)
 
-lambda1 = 3.0
-lambda2 = 4.0
+lambd = 2
 
-a[0] = lambda1 * s[0] + lambda2 * s[1]
+nugrad = np.matmul(nu, grad)
 
-if (abs(lambda1) < abs(lambda2)):
-    a[1] = lambda1 * s[1]
-else:
-    a[1] = lambda2 * s[1]
+print(nugrad)
 
-print(a)
+dx = lambd * nugrad
 
-s[0] = a[0] / np.linalg.norm(a[0])
+print(dx)
 
-print(s)
+x = x - dx
 
-b = a[1] - (a[1] * s[0].transpose()) * s[0]
+print(x)
 
-s[1] = b / np.linalg.norm(b)
+dx = -dx
+
+dg = _grad - grad
+
+print(dg)
+
+tmp1 = dx - np.matmul(nu, dg)
+tmp2 = tmp1.transpose()
+
+print(tmp1)
+print(tmp2)
+tmp3 = np.matmul(tmp2, tmp1)
+print(tmp3)
+
+tmp4 = tmp1 * np.asmatrix(dg).T
+
+dnu = tmp3 / tmp4
+
+print(dnu)
+
+# _grad = grad
+# grad = gradient(x, eps, target)
+
+# dgrad = grad - _grad
+
+# temp = dx - np.matmul(nu, grad)
+# temp = np.ravel(temp)
+
+# dnu = np.matmul(temp, temp) / np.matmul(temp, dgrad)
+
+# if (np.matmul(temp, dgrad) == 0):
+#     nu = np.matrix([[1, 0], [0, 1]], dtype = float)
+# else:
+#     nu = nu + dnu
+
+# print(x)

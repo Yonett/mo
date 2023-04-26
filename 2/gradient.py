@@ -1,9 +1,9 @@
 import numpy as np
 
-def func_test(x: np.array) -> float:
-    return (x[0] - 9) ** 2
+def test_func(x: np.array) -> float:
+    return x[0, 0]**2 + x[0, 1]**2
 
-def quad_func(x: np.array) -> int:
+def quad_func(x: np.array) -> float:
     """
     Quadratic function
 
@@ -12,6 +12,7 @@ def quad_func(x: np.array) -> int:
     :return: function value
     """
     return 100 * (x[0, 1] - x[0, 0])**2 + (1 - x[0, 0])**2
+
 
 def rosen_func(x: np.array) -> float:
     """
@@ -24,6 +25,7 @@ def rosen_func(x: np.array) -> float:
     """
     return 100 * (x[0, 1] - x[0, 0]**2)**2 + (1 - x[0, 0])**2
 
+
 def min_interval(begin: float, func: callable, delta: float, x: np.array, s: np.array) -> tuple[float, float]:
     """
     Finds an interval for search the minimum of a function
@@ -34,11 +36,9 @@ def min_interval(begin: float, func: callable, delta: float, x: np.array, s: np.
 
     :return: void
     """
-    #x0 = 1
-    #s0 = 2
+
     iters = h = 0
     prev = curr = next = begin
-
     if (func(x + begin * s) > func(x + (begin + delta) * s)):
         next = begin + delta
         h = delta
@@ -59,6 +59,7 @@ def min_interval(begin: float, func: callable, delta: float, x: np.array, s: np.
     else:
         return begin - delta, begin + delta
 
+
 def golden_section(begin: int, end: int, func: callable, eps: float, x: np.array, s: np.array) -> float:
     """
     Finds an interval that contains the minimum of a function
@@ -71,8 +72,7 @@ def golden_section(begin: int, end: int, func: callable, eps: float, x: np.array
 
     :return: void
     """
-    #x0 = 1
-    #s0 = 2
+
     golden_number = 0.381966011
 
     iters = 0
@@ -101,44 +101,68 @@ def golden_section(begin: int, end: int, func: callable, eps: float, x: np.array
     
     return (begin + end) / 2
 
+
+def gradient(x: np.array, eps: float, func: callable) -> np.array:
+	
+    x = np.asmatrix(x)
+    
+    func_value = func(x)
+
+    result = np.array([0, 0], dtype=float)
+    _x = x
+
+    for i in range(2):
+        _x[0, i] += eps
+        result[i] = (func(_x) - func_value) / eps
+        _x[0, i] -= eps
+
+    return result
+
 def main():
-    x = np.array([1500.05, -7853.67], dtype = float)
-    s = np.matrix([[1, 0], [0, 1]], dtype = float)
-    a = np.matrix([[0, 0], [0, 0]], dtype = float)
-    eps = 1e-7
+    target: callable = rosen_func
+    x = np.array([2, 2], dtype=float)
+    eps: float = 1e-7
 
-    for i in range(1000):
+    nu = np.matrix([[1, 0], [0, 1]], dtype = float)
 
-        begin, end = min_interval(0, quad_func, 1e-10, x, s[0])
-        lambda1: float = golden_section(begin, end, quad_func, 1e-10, x, s[0])
-        #print(lambda1)
+    grad = gradient(x, eps, target)
 
-        x = x + s[0] * lambda1
-        #print(x)
+    for i in range(100):
 
-        begin, end = min_interval(0, quad_func, 1e-10, x, s[1])
-        lambda2: float = golden_section(begin, end, quad_func, 1e-10, x, s[1])
-        #print(lambda2)
+        if (i % 2 == 0):
+            nu = np.matrix([[1, 0], [0, 1]], dtype = float)
 
-        x = x + s[1] * lambda2
-        #print(x)
+        if (np.linalg.det(nu) <= 0):
+            nu = np.matrix([[1, 0], [0, 1]], dtype = float)
 
-        a[0] = lambda1 * s[0] + lambda2 * s[1]
-        if (abs(lambda1) < abs(lambda2)):
-            a[1] = lambda1 * s[1]
+        nugrad = np.matmul(nu, grad)
+
+        begin, end = min_interval(0, target, eps, x, nugrad)
+        lambd: float = golden_section(begin, end, target, eps, x, nugrad)
+
+        dx = lambd * nugrad
+        x = x + dx
+
+        _grad = grad
+        grad = gradient(x, eps, target)
+
+        dgrad = grad - _grad
+
+        tmp1 = dx - np.matmul(nu, dgrad)
+        tmp2 = tmp1.transpose()
+
+        tmp3 = np.matmul(tmp2, tmp1)
+
+        tmp4 = tmp1 * np.asmatrix(dgrad).T
+
+        if (tmp4 == 0):
+            nu = np.matrix([[1, 0], [0, 1]], dtype = float)
         else:
-            a[1] = lambda2 * s[1]
-
-        s[0] = a[0] / np.linalg.norm(a[0])
-        #print("s[0]:", s[0])
-
-        b = a[1] - (a[1] * s[0].transpose()) * s[0]
-
-        s[1] = b / np.linalg.norm(b)
+            dnu = tmp3 / tmp4
+            nu = nu + dnu
 
     print(x)
-
-
+    
 
 if __name__ == "__main__":
     main()
