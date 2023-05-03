@@ -117,8 +117,10 @@ def gradient(x: np.array, eps: float, func: callable) -> np.array:
 
     return result
 
+
 def angle(x: np.array, s: np.array):
     return acos((x[0,0]*s[0,0] + x[0,1]*s[0,1]) / (sqrt(x[0,0] ** 2 + x[0,1]**2) * sqrt(s[0,0] ** 2 + s[0,1]**2))) * 180 / 3.1415926535
+
 
 def broyden(x: np.array, eps: float, target: callable):
     nu = np.matrix([[1, 0], [0, 1]], dtype = float)
@@ -149,7 +151,7 @@ def broyden(x: np.array, eps: float, target: callable):
 
             begin, end = min_interval(0, target, eps, x, nugrad)
             lambd: float = golden_section(begin, end, target, eps, x, nugrad)
-            
+
             dx = lambd * nugrad
             x = x + dx
 
@@ -181,6 +183,7 @@ def broyden(x: np.array, eps: float, target: callable):
             deltaF = abs(target(np.asmatrix(x)) - target(np.asmatrix(x_prev)))
 
         return (x, iters, funcs_count)
+
 
 def main():
     x = np.array([10, -8], dtype = float)

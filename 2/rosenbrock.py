@@ -102,8 +102,10 @@ def golden_section(begin: int, end: int, func: callable, eps: float, x: np.array
     
     return (begin + end) / 2
 
+
 def angle(x: np.array, s: np.array):
     return acos((x[0,0]*s[0,0] + x[0,1]*s[0,1]) / (sqrt(x[0,0] ** 2 + x[0,1]**2) * sqrt(s[0,0] ** 2 + s[0,1]**2))) * 180 / 3.1415926535
+
 
 def rosenbrock(x: np.array, eps: float, target: callable):
     

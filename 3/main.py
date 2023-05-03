@@ -42,39 +42,23 @@ def G5(x: np.array) -> float:
 
 #Функции для метода штрафный функций
 
-def Q_1_1(x: np.array) -> float:
-    return(func_f(x) + r * (H1(x) + G1(x)))
+def Q_0_1(x: np.array) -> float:
     return(func_f(x) + r * (G1(x)))
 
-def Q_1_2(x: np.array) -> float:
-    return(func_f(x) + r * (H1(x) + G2(x)))
+def Q_0_2(x: np.array) -> float:
     return(func_f(x) + r * (G2(x)))
 
-def Q_1_3(x: np.array) -> float:
-    return(func_f(x) + r * (H1(x) + G3(x)))
+def Q_0_3(x: np.array) -> float:
     return(func_f(x) + r * (G3(x)))
 
-#--------------------------
+def Q_1_0(x: np.array) -> float:
+    return(func_f(x) + r * (H1(x)))
 
-def Q_2_1(x: np.array) -> float:
-    return(func_f(x) + r * (H2(x) + G1(x)))
+def Q_2_0(x: np.array) -> float:
+    return(func_f(x) + r * (H2(x)))
 
-def Q_2_2(x: np.array) -> float:
-    return(func_f(x) + r * (H2(x) + G2(x)))
-
-def Q_2_3(x: np.array) -> float:
-    return(func_f(x) + r * (H2(x) + G3(x)))
-
-#--------------------------
-
-def Q_3_1(x: np.array) -> float:
-    return(func_f(x) + r * (H3(x) + G1(x)))
-
-def Q_3_2(x: np.array) -> float:
-    return(func_f(x) + r * (H3(x) + G2(x)))
-
-def Q_3_3(x: np.array) -> float:
-    return(func_f(x) + r * (H3(x) + G3(x)))
+def Q_3_0(x: np.array) -> float:
+    return(func_f(x) + r * (H3(x)))
 
 ##########################
 
@@ -209,19 +193,43 @@ def rosenbrock(x: np.array, eps: float, target: callable):
 
     return x
 
+##########################
 
 def main():
+
+    # A solve:
+    # 5,8823529411764705882352941176471
+    # B solve:
+    # 16
+
+    A_solve = 5.8823529411764705882352941176471
+    B_solve = 16.0
+
     x = np.array([0, 0], dtype = float)
     eps: float = 1e-7
-    target: callable = Q_3_3
+
+
+    target: callable = Q_0_3
     global r
+    iters = 0
+    solve = rosenbrock(x, eps, target)
+
+    while (func_g(solve) > 0):
+        r *= 2
+        iters += 1
+        solve = rosenbrock(x, eps, target)
+    print(solve, target(solve), r, iters, target(solve) - A_solve)
+
+    r = 1
+    x = np.array([0, 0], dtype = float)
+    target: callable = Q_1_0
 
     solve = rosenbrock(x, eps, target)
 
-    while (func_g(solve) > eps or abs(func_h(solve)) > eps):
+    while (abs(func_h(solve)) > eps):
         r *= 2
         solve = rosenbrock(x, eps, target)
-    print(solve, target(solve))
+    print(solve, target(solve), r, target(solve) - B_solve)
 
 if __name__ == "__main__":
     main()
