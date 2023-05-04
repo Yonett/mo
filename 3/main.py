@@ -1,10 +1,14 @@
 import numpy as np
 from math import log
+import csv
 
 alpha: int = 4
 r: float = 1
+func_count: int = 0
 
 def func_f(x: np.array) -> float:
+    global func_count
+    func_count += 1
     return 4*(x[0, 0] + x[0, 1])**2 + x[0, 0]**2
 
 def func_g(x: np.array) -> float:
@@ -196,40 +200,94 @@ def rosenbrock(x: np.array, eps: float, target: callable):
 ##########################
 
 def main():
-
-    # A solve:
-    # 5,8823529411764705882352941176471
-    # B solve:
-    # 16
+    # 1 r *= 2
+    # 2 r *= 5
+    # 3 r *= 100
+    # 4 r *= 200
 
     A_solve = 5.8823529411764705882352941176471
     B_solve = 16.0
+    global r
+    global func_count
+
+    # targets = [Q_0_1, Q_0_2, Q_0_3]
+    # eps_range = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
+
+    #target: callable = Q_0_1
+    #x = np.array([0, 0], dtype = float)
+    # eps: float = 1e-7
+    #r0_range = [1, 2, 5, 10, 100, 200, 1000]
+    # r0 = 1
+
+    # x_range = [
+    #     np.array([0, 0], dtype = float),
+    #     np.array([10, 10], dtype = float),
+    #     np.array([-10, -10], dtype = float),
+    #     np.array([100, 100], dtype = float),
+    #     np.array([-100, -100], dtype = float),
+    #     ]
+
+    # with open(f'x0.csv', 'w', newline='') as csvfile:
+    #     spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    #     for x in x_range:
+    #         for target in targets:
+    #             r = r0
+    #             iters = 0
+    #             func_count = 0
+            
+    #             solve = rosenbrock(x, eps, target)
+
+    #             while (func_g(solve) > eps):
+    #                 #r *= 2
+    #                 #r *= 5
+    #                 #r *= 100
+    #                 r *= 200
+    #                 iters += 1
+    #                 solve = rosenbrock(x, eps, target)
+            
+    #             spamwriter.writerow([target.__name__, r0, x[0], x[1], eps, iters, func_count, solve[0, 0], solve[0, 1], target(solve), target(solve) - A_solve])
+
+
+    # 1 r *= 2
+    # 2 r *= 5
+    # 3 r += 10
+    # 4 r += 100
+    
+    targets = [Q_1_0, Q_2_0, Q_3_0]
+    eps_range = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
 
     x = np.array([0, 0], dtype = float)
     eps: float = 1e-7
+    r0_range = [1, 2, 5, 10, 100, 200, 1000]
+    r0 = 1
 
+    x_range = [
+        np.array([0, 0], dtype = float),
+        np.array([10, 10], dtype = float),
+        np.array([-10, -10], dtype = float),
+        np.array([100, 100], dtype = float),
+        np.array([-100, -100], dtype = float),
+        ]
 
-    target: callable = Q_0_3
-    global r
-    iters = 0
-    solve = rosenbrock(x, eps, target)
+    with open(f'x0.csv', 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for x in x_range:
+            for target in targets:
+                r = r0
+                iters = 0
+                func_count = 0
 
-    while (func_g(solve) > 0):
-        r *= 2
-        iters += 1
-        solve = rosenbrock(x, eps, target)
-    print(solve, target(solve), r, iters, target(solve) - A_solve)
+                solve = rosenbrock(x, eps, target)
 
-    r = 1
-    x = np.array([0, 0], dtype = float)
-    target: callable = Q_1_0
+                while (abs(func_h(solve)) > eps):
+                    r *= 2
+                    #r *= 5
+                    #r *= 100
+                    #r *= 200
+                    iters += 1
+                    solve = rosenbrock(x, eps, target)
 
-    solve = rosenbrock(x, eps, target)
-
-    while (abs(func_h(solve)) > eps):
-        r *= 2
-        solve = rosenbrock(x, eps, target)
-    print(solve, target(solve), r, target(solve) - B_solve)
+                spamwriter.writerow([target.__name__, r0, x[0], x[1], eps, iters, func_count, solve[0, 0], solve[0, 1], target(solve), target(solve) - B_solve])
 
 if __name__ == "__main__":
     main()
