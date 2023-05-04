@@ -4,10 +4,13 @@ import random
 import numpy as np
 import csv
 
-eps_range = {1, 1e-1, 1e-2}
-P_range = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7}
+eps_range = [1, 1e-1, 1e-2]
+P_range = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+func_count = 0
 
 def func(x: np.array):
+    global func_count
+    func_count += 1
     result = 0
     for i in range(6):
         result += C[i] / (1+(x[0, 0] - a[i])**2 + (x[0, 1] - b[i])**2)
@@ -184,7 +187,7 @@ def alg1(seed: float, m: int, eps: float, target: callable):
     attempts = 0
 
     while attempts < m:
-        seed *= 2
+        seed += 1
         random.seed(seed)
         dot = np.array([], dtype=float)
         dot = np.append(dot, random.uniform(-10, 10))
@@ -212,7 +215,7 @@ def alg2(seed: float, m: int, eps: float, target: callable):
     attempts = 0
 
     while (attempts < m):
-        seed *= 2
+        seed += 1
         random.seed(seed)
         dot = np.array([], dtype=float)
         dot = np.append(dot, random.uniform(-10, 10))
@@ -239,6 +242,7 @@ def alg3(seed: float, m: int, eps: float, target: callable):
     attempts = 0
 
     while (attempts < m):
+        seed += 1
         rand_dir = np.array([], dtype=float)
         rand_dir = np.append(rand_dir, random.uniform(-10, 10))
         rand_dir = np.append(rand_dir, random.uniform(-10, 10))
@@ -265,10 +269,27 @@ def alg3(seed: float, m: int, eps: float, target: callable):
     return result, -value
 
 def main():
-    make_srs_research()
-    #print(alg1(1, 10, 1e-7, func))
-    #print(alg2(1, 20, 1e-7, func))
-    #print(alg3(1, 20, 1e-7, func))
+    #make_srs_research()
+    algs = [alg1, alg2, alg3]
+    ms = [10, 100, 1000, 10000]
+    seeds = [1, 10, 100, 1000, 10000]
+    global func_count
+
+    for seed in seeds:
+        with open(f'seed_{seed}.csv', 'w', newline='') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            for m in ms:
+                for alg in algs:
+                    print(f"{seed}, {m}, {alg.__name__} working...")
+                    func_count = 0
+                    dot, value = alg(seed, m, 1e-7, func)
+                    dot = np.asmatrix(dot)
+                    spamwriter.writerow([m, alg.__name__, func_count, dot[0, 0], dot[0, 1], value])
+                    print(f"{seed}, {m}, {alg.__name__} done")
+
+    # print(alg1(1, 10, 1e-7, func))
+    # print(alg2(1, 10, 1e-7, func))
+    # print(alg3(1, 10, 1e-7, func))
 
 if __name__ == "__main__":
     main()
