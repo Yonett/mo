@@ -5,7 +5,7 @@ import csv
 
 funcs_count: int = 0
 
-eps_range = {1e-3, 1e-4, 1e-5, 1e-6, 1e-7}
+eps_range = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
 
 
 def test_func(x: np.array) -> float:
@@ -165,7 +165,7 @@ def rosenbrock(x: np.array, eps: float, target: callable):
 
 
 def main():
-    x = np.array([10, -8], dtype = float)
+    x = np.array([-2500, 6000], dtype = float)
     targets = {test_func, quad_func, rosen_func}
 
     for target in targets:

@@ -5,7 +5,7 @@ import csv
 
 funcs_count: int = 0
 
-eps_range = {1e-3, 1e-4, 1e-5, 1e-6, 1e-7}
+eps_range = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
 
 def test_func(x: np.array) -> float:
     global funcs_count
@@ -133,7 +133,7 @@ def broyden(x: np.array, eps: float, target: callable):
     deltaF: float = eps
     deltaX: bool = True
     
-    with open(f'broyden/t2/{target.__name__}_{eps:1.1e}.csv', 'w', newline='') as csvfile:
+    with open(f'broyden/t2/{target.__name__}_{eps:1.1e}.csv', 'w', newline="") as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         while (deltaF >= eps and deltaX == True):
@@ -155,7 +155,20 @@ def broyden(x: np.array, eps: float, target: callable):
             dx = lambd * nugrad
             x = x + dx
 
-            spamwriter.writerow([iters, np.asmatrix(x)[0, 0], np.asmatrix(x)[0, 1], target(np.asmatrix(x)), nu[0], nu[1], lambd, abs(np.asmatrix(x)[0, 0] - np.asmatrix(x_prev)[0, 0]), abs(np.asmatrix(x)[0, 1] - np.asmatrix(x_prev)[0, 1]), abs(target(np.asmatrix(x)) - target(np.asmatrix(x_prev))), angle(np.asmatrix(x), nugrad), np.asmatrix(grad), nugrad])
+            spamwriter.writerow([iters,
+                                 np.asmatrix(x)[0, 0],
+                                 np.asmatrix(x)[0, 1],
+                                 target(np.asmatrix(x)),
+                                 nugrad,
+                                 lambd,
+                                 [
+                                    f'{abs(np.asmatrix(x)[0, 0] - np.asmatrix(x_prev)[0, 0]):1.1e}',
+                                    f'{abs(np.asmatrix(x)[0, 1] - np.asmatrix(x_prev)[0, 1]):1.1e}',
+                                    f'{abs(target(np.asmatrix(x)) - target(np.asmatrix(x_prev))):1.1e}',
+                                 ],
+                                 angle(np.asmatrix(x), nugrad),
+                                 np.asmatrix(grad),
+                                 nu])
 
             _grad = grad
             grad = gradient(x, eps, target)
@@ -186,8 +199,11 @@ def broyden(x: np.array, eps: float, target: callable):
 
 
 def main():
-    x = np.array([10, -8], dtype = float)
+    x = np.array([15, -5], dtype = float)
     targets = {test_func, quad_func, rosen_func}
+
+    np.set_printoptions(suppress=True,
+                    formatter={'float_kind':'{:1.1e}'.format})
 
     for target in targets:
         with open(f'broyden/t1/{target.__name__}.csv', 'w', newline='') as csvfile:
